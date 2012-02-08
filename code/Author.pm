@@ -71,4 +71,42 @@ sub getDate {
 
 }
 
+# Imagine we have a table that tracks the work we've done on
+# our masterpiece. It has two columns: date and int.
+
+sub updateNovel {
+
+	my $self = shift;
+	my $dbh = shift;
+	my $date = shift;
+	my $wc = shift;
+
+	my $sth = $dbh->prepare("Update novelTracking SET last_worked = ?, word_count = ?") || $log->logdie ("Could not prepare statement: " . $dbh->errstr);
+
+	$sth->execute($date, $wc) || $log->logdie ("Could not execute: " . $dbh->errstr);
+
+}
+
+sub getNovelStats {
+
+	my $self = shift;
+	my $dbh = shift;
+	my $totalWc = 0;
+	my @stats = ();
+
+	my $sth = $dbh->prepare("Select last_worked,word_count FROM novelTracking") || $log->logdie ("Could not prepare statement: " . $dbh->errstr);
+
+	$sth->execute() || $log->logdie ("Could not execute: " . $dbh->errstr);
+
+	while ( my @row = $sth->fetchrow_array ) {
+
+		push(@stats, \@row);
+		$totalWc += $row[1];
+
+	}
+
+	return $totalWc, @stats;
+
+}
+
 1;
